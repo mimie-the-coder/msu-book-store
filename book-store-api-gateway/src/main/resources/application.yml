@@ -1,0 +1,72 @@
+server:
+  port: ${SERVER_PORT:8700}
+
+---
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: account-service
+          uri: http://localhost:1000/
+          predicates:
+            - Path=/api/v1/account/*
+
+        - id: billing-service
+          uri: http://localhost:2000/
+          predicates:
+            - Path=/api/v1/billing/**
+
+        - id: catalog-service
+          uri: http://localhost:3000/
+          predicates:
+            - Path=/api/v1/catalog/**
+
+---
+spring:
+  main:
+    web-application-type: reactive
+---
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://${EUREKA_HOST:localhost:8761}/eureka/
+    registerWithEureka: true
+    enabled: true
+  instance:
+    prefer-ip-address: false
+
+---
+hystrix:
+  command:
+    fallback:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 4000
+
+---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: hystrix.stream
+
+---
+
+spring:
+  main:
+    allow-circular-references: true
+
+---
+
+spring:
+  main:
+  allow-bean-definition-overriding: true
+
+
+
+
+
+
